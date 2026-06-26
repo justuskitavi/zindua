@@ -38,5 +38,5 @@ export function tempToSeverity(Degrees: number): AlertSeverity {
     return "watch"
 }
 
-export const IGADCcountries = ['KE', 'ET', 'SO', 'SS', 'UG, DJ', 'ER', 'SD'] as const 
+export const IGADCcountries = ['KE', 'ET', 'SO', 'SS', 'UG', 'DJ', 'ER', 'SD'] as const 
 export type IgadCountry = typeof IGADCcountries[number]

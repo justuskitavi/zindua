@@ -5,7 +5,7 @@ import {
     IGADCcountries
 } from "../normalize"
 
-const RELIEFWEB_BASE = "https://api.reliefweb.int/v1"
+const RELIEFWEB_BASE = "https://api.reliefweb.int/v2"
 
 const ISO3_TO_ISO2: Record<string, string> = {
     KEN:'KE', UGA: 'UG', ETH: 'ET', SOM: 'SO', SSD: 'SS', DJI: 'DJ', ERI: 'ER', SDN: 'SD',
@@ -56,7 +56,7 @@ export const reliefWeb: IngestionSource = {
         let reports: reliefWebReport[]
 
         try {
-            const url = `${RELIEFWEB_BASE}/reports?appname=zindua`
+            const url = `${RELIEFWEB_BASE}/reports?appname=test`
             const res = await fetch(
                 url, {
                         
@@ -66,22 +66,30 @@ export const reliefWeb: IngestionSource = {
                         filter: {
                             operator: 'AND',
                             conditions: [
-                                { field: 'type.name', value: 'Alert'}, 
-                                { field: 'coutry.iso3', value: 'igadIso3', operator: 'OR' },
+                                { field: 'type.name', value: 'Alert' },
+                                {
+                                    operator: 'OR',
+                                    conditions: igadIso3.map(code => ({
+                                        field: 'country.iso3',
+                                        value: code,
+                                    })),
+                                },
                             ]
                         },
 
                         fields: {
                             include: ['title', 'body', 'date', 'country', 'disaster_type','source'],
                         },
-                        sort: ['date-desc'],
+                        sort: [{ field: 'date', order: 'desc' }],
                         limit: 20,
                     }),
                     signal: AbortSignal.timeout(10_000),
                 }
             )
             if (!res.ok) {
-                console.error(`[reliefweb] HTTP ${res.status}`)
+                const errorText = await res.text()
+                console.error(`[reliefweb] HTTP ${res.status}`, errorText)
+                return []
             }
 
 

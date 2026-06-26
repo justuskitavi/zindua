@@ -1,4 +1,3 @@
-import { headers } from "next/headers"
 import {
     type IngestionSource,
     type NormalizedAlert,
@@ -6,6 +5,7 @@ import {
     ipcPhaseToSeverity,
     IGADCcountries
 } from "../normalize"
+import { getFEWSAuthToken } from "@/src/scripts/auth"
 
 const FEWS_NET_BASE = "https://fdw.fews.net/api"
 
@@ -38,15 +38,18 @@ export const fewsNet: IngestionSource = {
 
     async fetchAndNormalize(): Promise<NormalizedAlert[]> {
         const results: NormalizedAlert[] = []
-
+        const authToken = getFEWSAuthToken()
         for (const country of IGADCcountries) {
             let data: fewsNetAlert[]
 
             try {
-                const url = `${FEWS_NET_BASE}/alert/?country=${country}&format=json&limit=10`
+                
+                const url = `${FEWS_NET_BASE}/geograhicunit/?country=${country}&format=json&limit=10`
                 const res = await fetch (
                     url,{
-                        headers: { Accept: 'application/json' },
+                        headers: { Accept: 'application/json',
+                            ...(authToken ? { Authorization: `JWT: ${authToken}` }: {}),
+                         },
                         signal: AbortSignal.timeout(10_000),
                     }) 
                     
@@ -56,11 +59,15 @@ export const fewsNet: IngestionSource = {
                 }
 
                 const json = await res.json()
-                 data = Array.isArray(json) ? json: json(json.results ?? [])
+                data = Array.isArray(json)
+                    ? json
+                    : Array.isArray(json.results)
+                        ? json.results                        
+                        : []
             } catch(err) {
                 console.error(`[fewsnet] failed for country ${country}`, err)
                 continue
-            }   
+            }
 
             for (const  alert of data ) {
                 results.push ({

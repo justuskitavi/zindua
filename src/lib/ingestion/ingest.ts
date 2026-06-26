@@ -2,7 +2,7 @@ import { Redis } from '@upstash/redis'
 import { prisma } from '../prisma/client'
 import { fewsNet } from './sources/fewsNet'
 import { reliefWeb } from './sources/reliefWeb'
-import { openmeteo } from './sources/openMeteo'
+import { openMeteo } from './sources/openMeteo'
 import type { NormalizedAlert } from './normalize'
 
 const redis = Redis.fromEnv()
@@ -25,20 +25,27 @@ async function isNew(alert: NormalizedAlert): Promise<boolean> {
 
 // Inserts a single normalized alert into Postgres.
 // ON CONFLICT DO NOTHING is the DB-level safety net in case Redis state is lost.
-async function saveAlert(alert: NormalizedAlert): Promise<void> {
-  await prisma.alert.create({
-    data: {
-      source: alert.source,
-      externalId: alert.externalId,
-      title: alert.title,
-      rawContent: alert.rawContent,
-      hazardType: alert.hazardType,
-      severity: alert.severity,
-      countryCode: alert.countryCode,
-      region: alert.region,
-      issuedAt: alert.issuedAt,
-    },
-  })
+async function saveAlert(alert: NormalizedAlert): Promise<void> {  
+    try {
+      await prisma.alert.create({
+        data: {
+        source: alert.source,
+        externalId: alert.externalId,
+        title: alert.title,
+        rawContent: alert.rawContent,
+        hazardType: alert.hazardType,
+        severity: alert.severity,
+        countryCode: alert.countryCode,
+        region: alert.region,
+        issuedAt: alert.issuedAt,
+        },
+      })
+    }catch(err: any) {
+      if (err.code === 'P2002') return
+      throw err
+    }
+    
+  
 }
 
 export interface IngestionResult {
@@ -52,7 +59,7 @@ export interface IngestionResult {
 // Runs all three sources in parallel, deduplicates, and saves new alerts.
 // Returns a summary per source so the cron route can log what happened.
 export async function runIngestion(): Promise<IngestionResult[]> {
-  const sources = [fewsNet, reliefWeb, openmeteo]
+  const sources = [fewsNet, reliefWeb, openMeteo]
 
   // Promise.allSettled — if one source throws, the others still complete.
   // This is the failure isolation we need.
