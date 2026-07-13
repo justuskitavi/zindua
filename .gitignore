@@ -42,5 +42,6 @@ next-env.d.ts
 
 /src/generated/prisma
 /prisma/test.ts
+/prisma/migrations/
 
 /src/scripts/testIngestion.ts

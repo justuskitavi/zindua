@@ -25,7 +25,21 @@ model Alert {
   issuedAt DateTime @map("issued_at") @db.Timestamptz
   ingestedAt DateTime @default(now()) @map("ingested_at") @db.Timestamptz()
   processed Boolean @default(false)
+  translations Translation[]
 
   @@unique([source, externalId])
   @@map("alerts")
+}
+
+model Translation {
+  id          String   @id @default(uuid()) @db.Uuid
+  alertId     String   @map("alert_id") @db.Uuid
+  language    String   // 'en' | 'sw' | 'so' | 'am' | 'om'
+  smsContent  String   @map("sms_content")   // ≤160 chars — for Africa's Talking
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  alert Alert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@unique([alertId, language])  // one translation per language per alert`
+  @@map("translations")
 }
