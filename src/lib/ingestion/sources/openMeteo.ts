@@ -34,7 +34,6 @@ const MONITORED_LOCATIONS = [
 const PRECIP_THRESHOLD_MM = 30
 const TEMP_THRESHOLD = 40
 
-//Raw shape returned by the open meteo endpoint. 
 interface OpenMeteoResponse {
     daily: {
     time: string[]

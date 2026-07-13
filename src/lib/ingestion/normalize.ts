@@ -1,8 +1,8 @@
 export type AlertSeverity = 'watch' | 'warning' | 'emergency'
 
-export type AlertHazard = 'flood' | 'drought' | 'food_insecurity' | 'extreme_heat' | 'displacement' | 'disease' | 'other'
+export type AlertHazard = 'flood' | 'drought' | 'food_insecurity' | 'extreme_heat' | 'displacement' | 'disease' | 'wildfire' | 'other'
 
-export type AlertSource = 'fewsnet' | 'openmeteo' | 'reliefweb'
+export type AlertSource = 'gdacs' | 'openmeteo'
 
 export interface NormalizedAlert {
     source: AlertSource,
@@ -19,12 +19,6 @@ export interface NormalizedAlert {
 export interface IngestionSource {
     name: AlertSource,
     fetchAndNormalize(): Promise<NormalizedAlert[]>
-}
-
-export function ipcPhaseToSeverity(phase: number): AlertSeverity {
-    if (phase >= 4) return "emergency"
-    if (phase === 3) return "warning"
-    return "watch"
 }
 
 export function precipToSeverity(mmPerDay: number): AlertSeverity {
