@@ -8,7 +8,11 @@ import { processUnprocessedAlerts } from '@/src/lib/translation/translation'
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const vercelCron = request.headers.get('x-vercel-cron')
+  const secret = process.env.CRON_SECRET
+
+  // Allow requests that either present the secret or originate from Vercel Cron
+  if (authHeader !== `Bearer ${secret}` && vercelCron !== 'true') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

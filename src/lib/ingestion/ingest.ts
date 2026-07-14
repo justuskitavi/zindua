@@ -49,7 +49,7 @@ export interface IngestionResult {
 }
 
 export async function runIngestion(): Promise<IngestionResult[]> {
-  const sources = [gdacs, openMeteo]
+  const sources = [openMeteo, gdacs]
 
   const settled = await Promise.allSettled(
     sources.map(async (source): Promise<IngestionResult> => {
