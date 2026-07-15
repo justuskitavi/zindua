@@ -6,7 +6,7 @@ import {
     NormalizedAlert,
 } from '../normalize'
 
-const IGAD_WKT = 'POLYGON((22 -5,52 -5,52 22,22 22,22 -5))'
+const IGAD_WKT = 'POLYGON((22 -5,52 -5,52 22,22 22,22 -5))'//Converts the IGAD region into WKT to set the geometryArea param
 
 const GDACS_BASE = 'https://www.gdacs.org/gdacsapi'
 
@@ -57,7 +57,7 @@ function mapHazard(eventType : string): AlertHazard {
     switch(eventType) {
         case 'FL' : return 'flood'
         case 'DR' : return 'drought'
-        case 'WC' : return 'wildfire'
+        case 'WF' : return 'wildfire'
         case 'TC' : return 'displacement'
         case 'EQ' : return 'other'
         default : return 'other'
@@ -137,14 +137,11 @@ export const gdacs : IngestionSource = {
 
         for (const feature of features) {
             const props = feature.properties
-
             if (!RELEVANT_EVENT_TYPES.has(props.eventtype)) continue
 
             if (props.iscurrent !== 'true') continue
 
-            const igadCountries = props.affectedcountries.length > 0
-            ? props.affectedcountries.filter((c: GdacsAffectedCountry) => IGADCcountries.includes(c.iso2 as (typeof IGADCcountries)[number]))
-            : []
+            const igadCountries = props.affectedcountries.length > 0 ? props.affectedcountries.filter((c: GdacsAffectedCountry) => IGADCcountries.includes(c.iso2 as (typeof IGADCcountries)[number])) : []
 
             if (igadCountries.length === 0) {
                 const primaryIso2 = ISO3_TO_ISO2[props.iso3]
@@ -194,5 +191,4 @@ const ISO3_TO_ISO2: Record<string, string> = {
   DJI: 'DJ',
   ERI: 'ER',
   SDN: 'SD',
-}
- 
+} 

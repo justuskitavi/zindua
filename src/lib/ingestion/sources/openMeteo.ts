@@ -77,7 +77,6 @@ export const openMeteo: IngestionSource = {
  
       const { time, precipitation_sum, temperature_2m_max } = data.daily
  
-      // Walk each forecast day and generate an alert if any threshold is crossed.
       // We only alert on days 1–3 (near-term actionable window) — day 0 is today,
       // days 4–6 are too uncertain to be worth notifying communities about.
       for (let i = 1; i <= 3; i++) {
@@ -88,8 +87,6 @@ export const openMeteo: IngestionSource = {
         if (precip >= PRECIP_THRESHOLD_MM) {
           results.push({
             source: 'openmeteo',
-            // external_id encodes location + date + hazard so the same forecast
-            // day doesn't get re-ingested on the next cron run
             externalId: `${loc.country}-${loc.name.replace(/\s/g, '_')}-flood-${date}`,
             title: `Heavy rainfall forecast — ${loc.name}, ${date}`,
             rawContent: `${precip.toFixed(1)}mm of rainfall is forecast for ${loc.name} on ${date}. This exceeds the threshold for flash flooding in this area.`,
