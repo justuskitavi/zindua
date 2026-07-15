@@ -35,9 +35,7 @@ async function saveAlert(alert: NormalizedAlert): Promise<void> {
     }catch(err: any) {
       if (err.code === 'P2002') return
       throw err
-    }
-    
-  
+    }  
 }
 
 export interface IngestionResult {
