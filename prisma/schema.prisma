@@ -23,9 +23,11 @@ model Alert {
   countryCode String @map("country_code")
   region String?
   issuedAt DateTime @map("issued_at") @db.Timestamptz
-  ingestedAt DateTime @default(now()) @map("ingested_at") @db.Timestamptz()
+  ingestedAt DateTime @default(now()) @map("ingested_at") @db.Timestamptz
   processed Boolean @default(false)
+
   translations Translation[]
+  notifications Notifications[]
 
   @@unique([source, externalId])
   @@map("alerts")
@@ -40,6 +42,39 @@ model Translation {
 
   alert Alert @relation(fields: [alertId], references: [id], onDelete: Cascade)
 
-  @@unique([alertId, language])  // one translation per language per alert`
+  @@unique([alertId, language])  // one translation per language per alert
   @@map("translations")
+}
+
+model FocalPoint {
+  id String @id @default(uuid()) @db.Uuid
+  name String
+  phone String @unique
+  countryCode String @map("country_code")
+  language String @default("en")
+  active Boolean @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  notifications Notifications[]
+
+  @@map("focal_points")
+}
+
+model Notifications {
+  id String @id @default(uuid()) @db.Uuid
+  alertId String @map("alert_id") @db.Uuid
+  focalPointId String @map("focal_point_id") @db.Uuid
+  messageId String? @map("message_id") 
+  status String @default("queued")
+  replyCode Int? @map("reply_code")
+  repliedAt DateTime? @map("replied_at") @db.Timestamptz
+  sentAt DateTime? @map("sent_at") @db.Timestamptz
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  alert Alert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  focalPoint FocalPoint @relation(fields: [focalPointId], references: [id], onDelete: Cascade)
+
+  @@unique([alertId, focalPointId])
+  @@map("notifications")
+
 }
