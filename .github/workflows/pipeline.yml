@@ -11,26 +11,44 @@ jobs:
     runs-on : ubuntu-latest
 
     steps:
-      - name : Trigger ingest
-        run : |
-          curl -f -X GET \
+      - name: Trigger ingest
+        run: |
+          response=$(curl -s -w "\n%{http_code}" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            "${{ secrets.VERCEL_URL }}"/api/cron/ingest
+            "${{ secrets.VERCEL_URL }}/api/cron/ingest")
+          echo "$response"
+          http_code=$(echo "$response" | tail -1)
+          if [ "$http_code" != "200" ]; then
+            echo "Failed with status $http_code"
+            exit 1
+          fi
 
-      - name : Wait for ingestion to complete
-        run : sleep 10
+      - name: Wait for ingestion to complete
+        run: sleep 15
 
-      - name : Trigger translation
-        run : |
-          curl -f -X GET \
+      - name: Trigger translation
+        run: |
+          response=$(curl -s -w "\n%{http_code}" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            "${{ secrets.VERCEL_URL }}"/api/translate
+            "${{ secrets.VERCEL_URL }}/api/translate")
+          echo "$response"
+          http_code=$(echo "$response" | tail -1)
+          if [ "$http_code" != "200" ]; then
+            echo "Failed with status $http_code"
+            exit 1
+          fi
 
-      - name : Wait for translation to complete
-        run : sleep 30
+      - name: Wait for translation to complete
+        run: sleep 30
 
-      - name : Trigger relay
-        run : |
-          curl -f -X GET \
+      - name: Trigger relay
+        run: |
+          response=$(curl -s -w "\n%{http_code}" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            "${{ secrets.VERCEL_URL }}"/api/relay
+            "${{ secrets.VERCEL_URL }}/api/relay")
+          echo "$response"
+          http_code=$(echo "$response" | tail -1)
+          if [ "$http_code" != "200" ]; then
+            echo "Failed with status $http_code"
+            exit 1
+          fi
