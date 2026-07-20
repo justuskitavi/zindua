@@ -1,15 +1,3 @@
-// Test script for the translation layer.
-// Run after ingestion has saved at least one alert to the database.
-//
-// Usage:
-//   npx tsx src/scripts/testTranslation.ts
-//
-// What it does:
-//   1. Finds the most recently ingested unprocessed alert
-//   2. Sends it to Claude for translation
-//   3. Prints all five language versions
-//   4. Confirms the row was saved to the translations table
-
 import { prisma } from '../lib/prisma/client'
 import { translateAlert } from '../lib/translation/translation'
 
@@ -22,7 +10,6 @@ async function main() {
 
   if (!alert) {
     console.log('No unprocessed alerts found. Run the ingestion test first:')
-    console.log('  npx tsx src/scripts/testIngestion.ts')
     process.exit(0)
   }
 
@@ -35,13 +22,13 @@ async function main() {
   console.log(`Country:  ${alert.countryCode}`)
   console.log(`Content:  ${alert.rawContent}`)
 
-  console.log('\n--- Calling Claude ---')
+  console.log('\n--- Calling Gemini ---')
   const start = Date.now()
   const success = await translateAlert(alert.id)
   const duration = Date.now() - start
 
   if (!success) {
-    console.error('Translation failed. Check your ANTHROPIC_API_KEY.')
+    console.error('Translation failed. Check your GEMINI_API_KEY.')
     process.exit(1)
   }
 

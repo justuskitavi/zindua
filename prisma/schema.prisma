@@ -33,6 +33,7 @@ model Translation {
   alertId     String   @map("alert_id") @db.Uuid
   language    String   // 'en' | 'sw' | 'so' | 'am' | 'om'
   smsContent  String   @map("sms_content")   // ≤160 chars — for Africa's Talking
+  fullContent String @map("full_content")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
 
   alert Alert @relation(fields: [alertId], references: [id], onDelete: Cascade)
