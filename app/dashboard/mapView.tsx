@@ -2,18 +2,23 @@
 
 import { useEffect, useRef } from 'react'
 
-interface Alert {
+export interface Alert {
   id: string
   title: string
-  source : string
+  source: string
   severity: 'watch' | 'warning' | 'emergency'
   hazardType: string
   countryCode: string
   region: string | null
+  issuedAt?: string
+  ingestedAt?: string
+  processed?: boolean
+  translationCount?: number
   stats: {
     total: number
     sent: number
     confirmed: number
+    acting: number
     needsHelp: number
   }
 }
@@ -24,7 +29,6 @@ interface MapViewProps {
   onSelectAlert: (alert: Alert | null) => void
 }
 
-// Approximate centroids for IGAD countries
 const COUNTRY_CENTROIDS: Record<string, [number, number]> = {
   KE: [-0.023559, 37.906193],
   ET: [9.145, 40.489673],
@@ -96,19 +100,17 @@ export default function MapView({ alerts, selectedAlert, onSelectAlert }: MapVie
       })
 
       map = L.map(mapRef.current!, {
-        center: [-20, 35],   // center on IGAD region
+        center: [0, 35],   
         zoom: 5,
         zoomControl: true,
         attributionControl: false,
       })
 
-      // Dark tile layer from CartoDB
       L.tileLayer(
         'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',
         { maxZoom: 12 }
       ).addTo(map)
 
-      // Country name labels layer
       L.tileLayer(
         'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',
         { maxZoom: 12, opacity: 0.6 }
@@ -125,12 +127,10 @@ export default function MapView({ alerts, selectedAlert, onSelectAlert }: MapVie
     }
   }, [])
 
-  // Update markers when alerts change
   useEffect(() => {
     if (!mapInstanceRef.current) return
     const { map, L } = mapInstanceRef.current
 
-    // Clear existing markers
     markersRef.current.forEach(m => m.remove())
     markersRef.current = []
 
@@ -142,7 +142,6 @@ export default function MapView({ alerts, selectedAlert, onSelectAlert }: MapVie
       const isSelected = selectedAlert?.id === alert.id
       const [lat, lng] = position
 
-      // SVG circle marker
       const svgIcon = L.divIcon({
         className: '',
         iconSize: [28, 28],
@@ -177,7 +176,6 @@ export default function MapView({ alerts, selectedAlert, onSelectAlert }: MapVie
     })
   }, [alerts, selectedAlert, onSelectAlert])
 
-  // Pan to selected alert
   useEffect(() => {
     if (!mapInstanceRef.current || !selectedAlert) return
     const position = getAlertPosition(selectedAlert)
@@ -219,7 +217,6 @@ export default function MapView({ alerts, selectedAlert, onSelectAlert }: MapVie
       `}</style>
       <div ref={mapRef} style={{ width: '100%', height: '100%', minHeight: '420px' }} />
 
-      {/* Legend */}
       <div className="absolute bottom-4 left-4 bg-zinc-900/90 border border-zinc-800 rounded-lg p-3 text-xs z-1000">
         <p className="text-zinc-500 mb-2 uppercase tracking-wider text-[10px]">Severity</p>
         {[
