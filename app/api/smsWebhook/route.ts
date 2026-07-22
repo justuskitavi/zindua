@@ -40,7 +40,7 @@ export async function POST(request : Request) {
     const notification = await prisma.notifications.findFirst({ where : { focalPointId : focalPoint.id, replyCode : null, status : 'sent' }, orderBy : { sentAt : 'desc'}})
 
     if (!notification) {
-        console.log(`[wenbook] No pending notifications for ${from}`)
+        console.log(`[webbook] No pending notifications for ${from}`)
         return NextResponse.json({ ok: true, note : 'No pending notification'})
     }
 
