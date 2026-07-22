@@ -3,8 +3,12 @@ import { prisma } from '@/src/lib/prisma/client'
 
 export async function GET() {
   try {
+    const now = new Date();
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(now.getDate() - 7);
     const [alerts, notifications, focalPoints] = await Promise.all([
       prisma.alert.findMany({
+        where: { ingestedAt: { gte: sevenDaysAgo, lte: now, } },
         orderBy: { ingestedAt: 'desc' },
         take: 50,
         include: {
@@ -30,7 +34,6 @@ export async function GET() {
       prisma.focalPoint.count({ where: { active: true } }),
     ])
 
-    // Compute per-alert stats
     const alertsWithStats = alerts.map(alert => {
       const total = alert.notifications.length
       const confirmed = alert.notifications.filter(n =>
@@ -58,7 +61,6 @@ export async function GET() {
       }
     })
 
-    // Global metrics
     const totalAlerts = alertsWithStats.length
     const totalNotified = alertsWithStats.reduce((sum, a) => sum + a.stats.sent, 0)
     const totalConfirmed = alertsWithStats.reduce((sum, a) => sum + a.stats.confirmed, 0)
