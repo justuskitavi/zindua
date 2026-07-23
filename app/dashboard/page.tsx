@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import DashboardRightPanel from './rightPanel'
+import FocalPointsPanel from './focalPointsPanel'
 import type { Alert as DashboardAlert } from './mapView'
 
 const MapView = dynamic(() => import('./mapView'), { ssr: false })
@@ -164,6 +165,7 @@ export default function DashboardPage() {
   const [selectedAlert, setSelectedAlert] = useState<DashboardAlert | null>(null)
   const [activeTab, setActiveTab] = useState<'alerts' | 'escalations'>('alerts')
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
+  const [panelOpen, setPanelOpen] = useState(false)
 
   const fetchData = useCallback(async () => {
     try {
@@ -241,7 +243,13 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-4 gap-3 px-5 pt-4 pb-3">
         <MetricCard label="Active alerts" value={metrics.totalAlerts} />
-        <MetricCard label="Focal points notified" value={metrics.totalNotified} accent="success" />
+        <div onClick={() => setPanelOpen(true)} className="cursor-pointer hover:border-amber-500/50 transition-colors" >
+        <MetricCard
+          label="Focal points notified"
+          value={metrics.totalNotified}
+          accent="success"
+        />
+      </div>
         <MetricCard
           label="Confirmation rate"
           value={`${metrics.confirmationRate}%`}
@@ -254,9 +262,9 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="flex flex-1 gap-3 px-5 pb-5 overflow-hidden" style={{ minHeight: 0 }}>
+      <div className="flex flex-1 gap-3 px-5 pb-5 overflow-hidden relative" style={{ minHeight: 0 }}>
 
-        <div className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden relative min-h-105">
+        <div className={`flex-1 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden relative min-h-105 z-10 transition-all duration-200 ${panelOpen ? 'blur-sm' : ''}`}>
           <MapView
             alerts={alerts}
             selectedAlert={selectedAlert}
@@ -264,14 +272,21 @@ export default function DashboardPage() {
           />
         </div>
 
-        <DashboardRightPanel
-          alerts={alerts}
-          escalations={escalations}
-          activeTab={activeTab}
-          selectedAlertId={selectedAlert?.id ?? null}
-          onTabChange={setActiveTab}
-          onSelectAlert={(alert) => setSelectedAlert(alert)}
-          timeAgo={timeAgo}
+        <div className={`transition-all duration-200 ${panelOpen ? 'blur-sm' : ''}`}>
+          <DashboardRightPanel
+            alerts={alerts}
+            escalations={escalations}
+            activeTab={activeTab}
+            selectedAlertId={selectedAlert?.id ?? null}
+            onTabChange={setActiveTab}
+            onSelectAlert={(alert) => setSelectedAlert(alert)}
+            timeAgo={timeAgo}
+          />
+        </div>
+        <FocalPointsPanel
+          open={panelOpen}
+          onClose={() => setPanelOpen(false)}
+          onDataChange={fetchData}
         />
       </div>
     </div>

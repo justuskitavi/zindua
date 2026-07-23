@@ -1,21 +1,7 @@
 import { NextResponse } from 'next/server'
 import { processUnprocessedAlerts } from '@/src/lib/translation/translation'
 
-// This route can be called:
-// 1. By the ingest cron route after saving new alerts (chained call)
-// 2. By Vercel Cron on its own schedule (add to vercel.json if needed)
-// 3. Manually during development for testing
-
 export async function GET(request: Request) {
-  const authHeader = request.headers.get('authorization')
-  const vercelCron = request.headers.get('x-vercel-cron')
-  const secret = process.env.CRON_SECRET
-
-  // Allow requests that either present the secret or originate from Vercel Cron
-  if (authHeader !== `Bearer ${secret}` && vercelCron !== 'true') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
   console.log('[cron] translation started')
   const start = Date.now()
 
