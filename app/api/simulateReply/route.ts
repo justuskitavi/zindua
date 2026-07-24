@@ -1,14 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/src/lib/prisma/client'
 
-// POST /api/simulate/reply
-// Simulates a focal point replying to their most recent alert notification.
-// Processes exactly as the real Africa's Talking webhook would.
-// Use during demos when real SMS replies aren't available.
-//
-// Body: { phone: string, replyCode: 1 | 2 | 3 }
-//   OR: { alertId: string, replyCode: 1 | 2 | 3 }  — simulates ALL focal points for an alert
-
 export async function POST(request: Request) {
     try {
         const body = await request.json()
@@ -49,7 +41,6 @@ export async function POST(request: Request) {
         return { ok: false, error: `No focal point with phone ${phone}` }
     }
 
-    // Find the most recent sent notification that hasn't been replied to
     const notification = await prisma.notifications.findFirst({
         where: {
         focalPointId: focalPoint.id,
@@ -113,14 +104,12 @@ async function simulateAllRepliesForAlert(alertId: string, replyCode: number) {
         replyCode,
         })
 
-        // Small delay so timestamps are slightly different — more realistic
         await new Promise(r => setTimeout(r, 50))
     }
 
     return results
 }
 
-// GET /api/simulate/reply — returns available alerts and focal points for the demo UI
 export async function GET() {
     const [alerts, focalPoints] = await Promise.all([
         prisma.alert.findMany({

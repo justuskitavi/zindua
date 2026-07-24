@@ -67,7 +67,7 @@ export async function relayAlert(alertId : string) : Promise<RelayResult> {
 
         const replyInstructions = REPLY_INSTRUCTIONS[fp.language] ?? REPLY_INSTRUCTIONS['en']
 
-        const maxContentLength = 160 - replyInstructions.length - 1
+        const maxContentLength = 120 - replyInstructions.length - 1
 
         const truncatedContent = smsContent.length > maxContentLength ? smsContent.slice(0, maxContentLength - 3) + '...' : smsContent
 

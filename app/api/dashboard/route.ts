@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const now = new Date();
     const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(now.getDate() - 7);
+    sevenDaysAgo.setDate(now.getDate() - 8);
     const [alerts, notifications, focalPoints] = await Promise.all([
       prisma.alert.findMany({
         where: { ingestedAt: { gte: sevenDaysAgo, lte: now, } },
@@ -36,14 +36,10 @@ export async function GET() {
 
     const alertsWithStats = alerts.map(alert => {
       const total = alert.notifications.length
-      const confirmed = alert.notifications.filter(n =>
-        n.replyCode === 1 || n.replyCode === 2
-      ).length
+      const confirmed = alert.notifications.filter(n => n.replyCode === 1 || n.replyCode === 2).length
       const acting = alert.notifications.filter(n => n.replyCode === 2).length
       const needsHelp = alert.notifications.filter(n => n.replyCode === 3).length
-      const sent = alert.notifications.filter(n =>
-        n.status === 'sent' || n.status === 'delivered'
-      ).length
+      const sent = alert.notifications.filter(n => n.status === 'sent').length
 
       return {
         id: alert.id,
@@ -68,7 +64,7 @@ export async function GET() {
     const confirmationRate = totalNotified > 0
       ? Math.round((totalConfirmed / totalNotified) * 100)
       : 0
-
+    
     return NextResponse.json({
       metrics: {
         totalAlerts,

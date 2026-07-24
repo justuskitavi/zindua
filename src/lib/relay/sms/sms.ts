@@ -21,7 +21,7 @@ export async function sendSMS(phone : string, message : string) : Promise<SMSRes
         return { phone, messageId : null, status : 'failed', error : 'Missing credentials' }
     }
 
-    const safeMessage = message.length < 160 ? message.slice(0, 157) + ('...') : message
+    const safeMessage = message.length < 120 ? message.slice(0, 117) + ('...') : message
 
     try {
         const body = new URLSearchParams({
@@ -36,7 +36,7 @@ export async function sendSMS(phone : string, message : string) : Promise<SMSRes
             headers : {
                 APIKey,
                 Accept : 'application/json',
-                Content_type : 'application//x-www-form-urlencoded',
+                'Content-Type' : 'application/x-www-form-urlencoded',
             },
             body : body.toString(),
             signal : AbortSignal.timeout(15_000),
